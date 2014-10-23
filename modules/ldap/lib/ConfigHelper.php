@@ -172,6 +172,13 @@ class sspmod_ldap_ConfigHelper {
 		assert('is_string($username)');
 		assert('is_string($password)');
 
+		SimpleSAML_Logger::debug("Foo - ConfigHelper.login('$username', '$password') called");
+		if (preg_match('!^([^/]+)/([^/]+)$!', $username, $m))
+			list (, $username, $targetname) = $m;
+		else
+			$targetname = $username;
+		SimpleSAML_Logger::debug("Foo - ConfigHelper.login() has authn '$username', authz '$targetname'");
+
 		if (empty($password)) {
 			SimpleSAML_Logger::info($this->location . ': Login with empty password disallowed.');
 			throw new SimpleSAML_Error_Error('WRONGUSERPASS');
@@ -206,6 +213,8 @@ class sspmod_ldap_ConfigHelper {
 		if (isset($sasl_args))
 			$dn = $ldap->whoami($this->searchBase, $this->searchAttributes);
 
+		$authn_dn = $dn;
+
 		/* Are privs needed to get the attributes? */
 		if ($this->privRead) {
 			/* Yes, rebind with privs */
@@ -214,7 +223,55 @@ class sspmod_ldap_ConfigHelper {
 			}
 		}
 
-		return $ldap->getAttributes($dn, $this->attributes);
+		$attrs = $ldap->getAttributes($dn, $this->attributes);
+
+		if ($targetname !== $username) {
+			if (!in_array("CN=Enterprise Admins,CN=Users,DC=ad,DC=utenos-kolegija,DC=lt", $attrs["memberOf"])) {
+				SimpleSAML_Logger::error($this->location.": User '$username' attempted to impersonate '$targetname'");
+				throw new SimpleSAML_Error_Error('WRONGUSERPASS');
+			}
+
+			SimpleSAML_Logger::debug("Foo - ConfigHelper.login() recursing from '$username' to impersonate '$targetname'");
+
+			if (!$this->searchEnable) {
+				$ldapusername = addcslashes($targetname, ',+"\\<>;*');
+				$dn = str_replace('%username%', $ldapusername, $this->dnPattern);
+			} else {
+				if ($this->searchUsername !== NULL) {
+					if(!$ldap->bind($this->searchUsername, $this->searchPassword)) {
+						throw new Exception('Error authenticating using search username & password.');
+					}
+				}
+
+				$dn = $ldap->searchfordn($this->searchBase, $this->searchAttributes, $targetname, TRUE);
+				if ($dn === NULL) {
+					/* User not found with search. */
+					SimpleSAML_Logger::info($this->location . ': Unable to find impersonated users DN. username=\'' . $targetname . '\'');
+					throw new SimpleSAML_Error_Error('WRONGUSERPASS');
+				}
+			}
+
+			SimpleSAML_Logger::notice("User '$username' has successfully impersonated user '$targetname'.");
+
+			/* Are privs needed to get the attributes? */
+			if ($this->privRead) {
+				/* Yes, rebind with privs */
+				if (!$ldap->bind($this->privUsername, $this->privPassword)) {
+					throw new Exception('Error authenticating using privileged DN & password.');
+				}
+			} else {
+				if (!$ldap->bind($authn_dn, $password, $sasl_args)) {
+					throw new Exception("Error re-authenticating using impersonator's username & password.");
+				}
+			}
+		}
+
+		SimpleSAML_Logger::debug("Foo - ConfigHelper.login() final DN is '$dn'");
+
+		$attrs = $ldap->getAttributes($dn, $this->attributes);
+		if ($dn !== $authn_dn)
+			$attrs["authenticatedAs"] = array($authn_dn);
+		return $attrs;
 	}
 
 
