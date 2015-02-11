@@ -162,4 +162,10 @@ $attributemap = array(
     'urn:oid:2.5.4.7'                    => 'l',
     'urn:oid:2.5.4.8'                    => 'st',
     'urn:oid:2.5.4.9'                    => 'street',
+    /* local */
+    'urn:oid:1.3.6.1.4.1.7865.1.2.1'     => 'litnetEduPersonStudyField',
+    'urn:oid:1.3.6.1.4.1.7865.1.2.2'     => 'litnetEduPersonStudyBranch',
+    'urn:oid:1.3.6.1.4.1.7865.1.2.3'     => 'litnetEduPersonStudentCategory',
+    'urn:oid:1.3.6.1.4.1.7865.1.2.4'     => 'litnetEduPersonTargetDegree',
+    'urn:oid:1.3.6.1.4.1.7865.1.2.5'     => 'litnetEduPersonLABTusrlibrary',
 );

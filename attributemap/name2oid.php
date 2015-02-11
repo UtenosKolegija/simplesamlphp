@@ -184,4 +184,10 @@ $attributemap = array(
     'userid'                        => 'urn:oid:0.9.2342.19200300.100.1.1',
     'x121Address'                   => 'urn:oid:2.5.4.24',
     'x500UniqueIdentifier'          => 'urn:oid:2.5.4.45',
+    /* local */
+    'litnetEduPersonStudyField'         => 'urn:oid:1.3.6.1.4.1.7865.1.2.1',
+    'litnetEduPersonStudyBranch'        => 'urn:oid:1.3.6.1.4.1.7865.1.2.2',
+    'litnetEduPersonStudentCategory'    => 'urn:oid:1.3.6.1.4.1.7865.1.2.3',
+    'litnetEduPersonTargetDegree'       => 'urn:oid:1.3.6.1.4.1.7865.1.2.4',
+    'litnetEduPersonLABTusrlibrary'     => 'urn:oid:1.3.6.1.4.1.7865.1.2.5',
 );
