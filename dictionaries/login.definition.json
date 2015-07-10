@@ -9,7 +9,7 @@
 		"en": "A service has requested you to authenticate yourself. Please enter your username and password in the form below."
 	},
 	"login_button": {
-		"en": "Login"
+		"en": "Log in"
 	},
 	"processing": {
 		"en": "Processing..."
