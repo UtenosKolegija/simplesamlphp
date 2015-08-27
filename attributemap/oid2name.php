@@ -162,10 +162,14 @@ $attributemap = array(
     'urn:oid:2.5.4.7'                    => 'l',
     'urn:oid:2.5.4.8'                    => 'st',
     'urn:oid:2.5.4.9'                    => 'street',
-    /* local */
+    /* local - LITNET */
     'urn:oid:1.3.6.1.4.1.7865.1.2.1'     => 'litnetEduPersonStudyField',
     'urn:oid:1.3.6.1.4.1.7865.1.2.2'     => 'litnetEduPersonStudyBranch',
     'urn:oid:1.3.6.1.4.1.7865.1.2.3'     => 'litnetEduPersonStudentCategory',
     'urn:oid:1.3.6.1.4.1.7865.1.2.4'     => 'litnetEduPersonTargetDegree',
     'urn:oid:1.3.6.1.4.1.7865.1.2.5'     => 'litnetEduPersonLABTusrlibrary',
+    /* local - SWITCH */
+    'urn:oid:2.16.756.1.2.5.1.1.1'       => 'swissEduPersonUniqueID',
+    'urn:oid:2.16.756.1.2.5.1.1.4'       => 'swissEduPersonHomeOrganization',
+    'urn:oid:2.16.756.1.2.5.1.1.5'       => 'swissEduPersonHomeOrganizationType',
 );
