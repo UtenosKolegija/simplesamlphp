@@ -189,4 +189,8 @@ $attributemap = array(
     'userid'                        => 'urn:oid:0.9.2342.19200300.100.1.1',
     'x121Address'                   => 'urn:oid:2.5.4.24',
     'x500UniqueIdentifier'          => 'urn:oid:2.5.4.45',
+
+    // 2017-10-09 mantas: local attributes
+    'ukServiceType'                 => 'urn:oid:1.3.6.1.4.1.43962.2.7',
+    'ukMemberOf'                    => 'urn:oid:1.3.6.1.4.1.43962.2.8',
 );
