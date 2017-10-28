@@ -167,4 +167,8 @@ $attributemap = [
     'urn:oid:2.5.4.7'                    => 'l',
     'urn:oid:2.5.4.8'                    => 'st',
     'urn:oid:2.5.4.9'                    => 'street',
+
+    // 2017-10-09 mantas: local attributes
+    'urn:oid:1.3.6.1.4.1.43962.2.7'      => 'ukServiceType',
+    'urn:oid:1.3.6.1.4.1.43962.2.8'      => 'ukMemberOf',
 ];
