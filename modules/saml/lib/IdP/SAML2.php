@@ -4,6 +4,7 @@ namespace SimpleSAML\Module\saml\IdP;
 
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use SAML2\Constants;
+use SAML2\XML\saml\Issuer;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SAML2\SOAP;
@@ -341,11 +342,15 @@ class SAML2
                 );
             }
 
-            $spEntityId = $request->getIssuer();
-            if ($spEntityId === null) {
+            $issuer = $request->getIssuer();
+            if ($issuer === null) {
                 throw new \SimpleSAML\Error\BadRequest(
                     'Received message on authentication request endpoint without issuer.'
                 );
+            } elseif ($issuer instanceof Issuer) {
+                $spEntityId = $issuer->getValue();
+            } else { // we got a string, old case
+                $spEntityId = $issuer;
             }
             $spMetadata = $metadata->getMetaDataConfig($spEntityId, 'saml20-sp-remote');
 
@@ -455,24 +460,7 @@ class SAML2
             'saml:RequestedAuthnContext'  => $authnContext,
         ];
 
-        // ECP AuthnRequests need to supply credentials
-        if ($binding instanceof SOAP) {
-            self::processSOAPAuthnRequest($state);
-        }
-
         $idp->handleAuthenticationRequest($state);
-    }
-
-    public static function processSOAPAuthnRequest(array &$state)
-    {
-        if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
-            Logger::error("ECP AuthnRequest did not contain Basic Authentication header");
-            // TODO Throw some sort of ECP-specific exception / convert this to SOAP fault
-            throw new \SimpleSAML\Error\Error("WRONGUSERPASS");
-        }
-
-        $state['core:auth:username'] = $_SERVER['PHP_AUTH_USER'];
-        $state['core:auth:password'] = $_SERVER['PHP_AUTH_PW'];
     }
 
     /**
@@ -581,10 +569,14 @@ class SAML2
         $binding = \SAML2\Binding::getCurrentBinding();
         $message = $binding->receive();
 
-        $spEntityId = $message->getIssuer();
-        if ($spEntityId === null) {
+        $issuer = $message->getIssuer();
+        if ($issuer === null) {
             /* Without an issuer we have no way to respond to the message. */
             throw new \SimpleSAML\Error\BadRequest('Received message on logout endpoint without issuer.');
+        } elseif ($issuer instanceof Issuer) {
+            $spEntityId = $issuer->getValue();
+        } else {
+            $spEntityId = $issuer;
         }
 
         $metadata = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
@@ -1102,7 +1094,10 @@ class SAML2
             \SimpleSAML\Module\saml\Message::addSign($idpMetadata, $spMetadata, $a);
         }
 
-        $a->setIssuer($idpMetadata->getString('entityid'));
+        $issuer = new Issuer();
+        $issuer->setValue($idpMetadata->getString('entityid'));
+        $issuer->setFormat(Constants::NAMEID_ENTITY);
+        $a->setIssuer($issuer);
         $a->setValidAudiences([$spMetadata->getString('entityid')]);
 
         $a->setNotBefore($now - 30);
@@ -1133,10 +1128,11 @@ class SAML2
         $a->setSessionIndex(\SimpleSAML\Utils\Random::generateID());
 
         $sc = new \SAML2\XML\saml\SubjectConfirmation();
-        $sc->SubjectConfirmationData = new \SAML2\XML\saml\SubjectConfirmationData();
-        $sc->SubjectConfirmationData->setNotOnOrAfter($now + $assertionLifetime);
-        $sc->SubjectConfirmationData->setRecipient($state['saml:ConsumerURL']);
-        $sc->SubjectConfirmationData->setInResponseTo($state['saml:RequestId']);
+        $scd = new \SAML2\XML\saml\SubjectConfirmationData();
+        $scd->setNotOnOrAfter($now + $assertionLifetime);
+        $scd->setRecipient($state['saml:ConsumerURL']);
+        $scd->setInResponseTo($state['saml:RequestId']);
+        $sc->setSubjectConfirmationData($scd);
 
         // ProtcolBinding of SP's <AuthnRequest> overwrites IdP hosted metadata configuration
         $hokAssertion = null;
@@ -1166,7 +1162,7 @@ class SAML2
                         $keyInfo = new \SAML2\XML\ds\KeyInfo();
                         $keyInfo->addInfo($x509Data);
 
-                        $sc->SubjectConfirmationData->addInfo($keyInfo);
+                        $scd->addInfo($keyInfo);
                     } else {
                         throw new \SimpleSAML\Error\Exception(
                             'Error creating HoK assertion: No valid client certificate provided during TLS handshake '.
@@ -1187,6 +1183,7 @@ class SAML2
             // Bearer
             $sc->setMethod(\SAML2\Constants::CM_BEARER);
         }
+        $sc->setSubjectConfirmationData($scd);
         $a->setSubjectConfirmation([$sc]);
 
         // add attributes
@@ -1381,8 +1378,10 @@ class SAML2
         }
 
         $r = new \SAML2\Response();
-
-        $r->setIssuer($idpMetadata->getString('entityid'));
+        $issuer = new Issuer();
+        $issuer->setValue($idpMetadata->getString('entityid'));
+        $issuer->setFormat(Constants::NAMEID_ENTITY);
+        $r->setIssuer($issuer);
         $r->setDestination($consumerURL);
 
         if ($signResponse) {
