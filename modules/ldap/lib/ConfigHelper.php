@@ -311,7 +311,7 @@ class ConfigHelper
         if ($targetname !== $username) {
             if (!self::may_impersonate($username, $targetname, $attrs, null)) {
                 \SimpleSAML\Logger::error($this->location.": User '$username' attempted to impersonate '$targetname'");
-                throw new SimpleSAML_Error_Error('WRONGUSERPASS');
+                throw new \SimpleSAML\Error\Error('WRONGUSERPASS');
             }
 
             \SimpleSAML\Logger::debug("UK: ConfigHelper.login() recursing from '$username' to impersonate '$targetname'");
@@ -330,7 +330,7 @@ class ConfigHelper
                 if ($dn === NULL) {
                     /* User not found with search. */
                     \SimpleSAML\Logger::info($this->location . ': Unable to find impersonated users DN. username=\'' . $targetname . '\'');
-                    throw new SimpleSAML_Error_Error('WRONGUSERPASS');
+                    throw new \SimpleSAML\Error\Error('WRONGUSERPASS');
                 }
             }
 
@@ -358,7 +358,7 @@ class ConfigHelper
 
             if (!self::may_impersonate($username, $targetname, $authn_attrs, $attrs)) {
                 \SimpleSAML\Logger::error($this->location.": User '$username' attempted to impersonate '$targetname'");
-                throw new SimpleSAML_Error_Error('WRONGUSERPASS');
+                throw new \SimpleSAML\Error\Error('WRONGUSERPASS');
             }
 
             /* store impersonator's name */
