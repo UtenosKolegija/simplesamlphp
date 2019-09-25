@@ -6,6 +6,12 @@ SimpleSAMLphp changelog
 This document lists the changes between versions of SimpleSAMLphp.
 See the upgrade notes for specific information about upgrading.
 
+## Version 1.17.4
+
+Released 2019-07-11
+
+  * Fix an issue introduced in 1.17.3 with `enable.http_post`.
+
 ## Version 1.17.3
 
 Released 2019-07-10
@@ -31,9 +37,6 @@ Released 2019-07-10
     If you relied on this module, you may consider migrating to the
     [authoauth2 module](https://github.com/cirrusidentity/simplesamlphp-module-authoauth2).
     A migration guide for LinkedIn authentication is included in their README.
-
-### saml
-  * Added support for per-IDP configurable `AuthnContextClassRef`/`AuthnContextComparison`.
 
 ## Version 1.17.2
 
